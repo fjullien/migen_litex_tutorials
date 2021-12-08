@@ -40,7 +40,7 @@ class Tuto(Module):
         ring = RingSerialCtrl(12, 24e6)
         self.submodules += ring
         self.comb += ring.leds.eq(0b110111011010)
-        self.comb += ring.led_data.eq(0x000020)
+        self.comb += ring.colors.eq(0x000020)
         self.comb += data.eq(~ring.do)
 
 # Blinker -------------------------------------------------------------------------------------------

@@ -61,13 +61,11 @@ class RingSerialCtrl(Module):
 
         ###
 
-        period = int(150e-6 * sys_clk_freq)
         t1h    = int(0.80e-6 * sys_clk_freq)
         t1l    = int(0.45e-6 * sys_clk_freq)
 
         pulse_cnt  = Signal(max=24)
         high       = Signal(1, reset=1)
-        time_cnt   = Signal(max=period)
 
         t1h_timer = WaitTimer(t1h)
         t1l_timer = WaitTimer(t1l)
@@ -91,14 +89,6 @@ class RingSerialCtrl(Module):
                         t1l_timer.wait.eq(0),
                     ),
                 )
-            )
-        ]
-
-        self.sync += [
-            time_cnt.eq(time_cnt + 1),
-            If(time_cnt > period,
-                pulse_cnt.eq(0),
-                time_cnt.eq(0),
             )
         ]
 

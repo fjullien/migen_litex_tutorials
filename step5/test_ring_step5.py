@@ -31,7 +31,7 @@ class Tuto(Module):
         crg = CRG(platform)
         self.submodules += crg
 
-        led = RingControl(platform.request("do"), #.......
+        led = RingControl(platform.request("do"), # Add parameters
         self.submodules.ledring = led
 
 # Test -------------------------------------------------------------------------------------------
@@ -66,6 +66,9 @@ def main():
         run_simulation(ring, test(ring), clocks={"sys": 1e9/24e6}, vcd_name="sim.vcd")
         exit()
 
+    # Here you may want to add the parameter you want to control from the command line
+
+    # And pass it to Tuto
     design = Tuto(platform, 24e6)
     platform.build(design, build_dir=build_dir)
 

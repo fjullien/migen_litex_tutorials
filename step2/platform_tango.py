@@ -30,15 +30,11 @@ _io = [
     ),
 ]
 
-# Connectors ---------------------------------------------------------------------------------------
-
-_connectors = []
-
 # Platform -----------------------------------------------------------------------------------------
 
 class Platform(GowinPlatform):
     def __init__(self):
-        GowinPlatform.__init__(self, "GW1N-LV1QN48C6/I5", _io, _connectors, toolchain="gowin", devicename="GW1N-1")
+        GowinPlatform.__init__(self, "GW1N-LV1QN48C6/I5", _io, [], toolchain="gowin", devicename="GW1N-1")
         self.toolchain.options["use_done_as_gpio"] = 1
         self.toolchain.options["use_reconfign_as_gpio"] = 1
 

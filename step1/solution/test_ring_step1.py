@@ -55,7 +55,7 @@ class Blink(Module):
 # RingSerialCtrl -------------------------------------------------------------------------------------------
 
 class RingSerialCtrl(Module):
-    def __init__(self, sys_clk_freq):
+    def __init__(self):
         self.do = Signal()
 
         ###
@@ -64,12 +64,10 @@ class RingSerialCtrl(Module):
         high       = Signal(1, reset=1)
         t_high_cnt = Signal(max=19)
         t_low_cnt  = Signal(max=10)
-        time_cnt   = Signal(max=3600)
 
         self.sync += [
             If(pulse_cnt < 24,
                 If(high,
-                    self.do.eq(0),
                     self.do.eq(1),
                     t_high_cnt.eq(t_high_cnt + 1),
                     If(t_high_cnt == 19,
@@ -85,14 +83,6 @@ class RingSerialCtrl(Module):
                         pulse_cnt.eq(pulse_cnt + 1),
                     ),
                 )
-            )
-        ]
-
-        self.sync += [
-            time_cnt.eq(time_cnt + 1),
-            If(time_cnt > 3600,
-                pulse_cnt.eq(0),
-                time_cnt.eq(0),
             )
         ]
 

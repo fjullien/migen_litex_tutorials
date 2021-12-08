@@ -1,5 +1,11 @@
+from enum import Enum
+
 from migen import *
 from migen.genlib.misc import WaitTimer
+
+class mode(Enum):
+    SINGLE = 0
+    DOUBLE = 1
 
 class RingControl(Module):
     def __init__(self, pad, mode, color, nleds, sys_clk_freq):
@@ -10,54 +16,62 @@ class RingControl(Module):
         ring_timer = WaitTimer(int(0.05*sys_clk_freq))
         self.submodules += ring_timer
 
-        led_array = Array([
-            0b100000100000,
-            0b010000010000,
-            0b001000001000,
-            0b000100000100,
-            0b000010000010,
-            0b000001000001,
-            0b100000100000,
-            0b010000010000,
-            0b001000001000,
-            0b000100000100,
-            0b000010000010,
-            0b000001000001,
-            ]
-        )
+        # This is a build time configuration.
+        # Here we use a Python 'if/else' statement
+        if (mode == mode.DOUBLE):
+            print("Led ring controller configured for dual led")
+            led_array = Array([
+                0b100000100000,
+                0b010000010000,
+                0b001000001000,
+                0b000100000100,
+                0b000010000010,
+                0b000001000001,
+                0b100000100000,
+                0b010000010000,
+                0b001000001000,
+                0b000100000100,
+                0b000010000010,
+                0b000001000001,
+                ]
+            )
+        else:
+            print("Led ring controller configured for single led")
+            led_array = Array([
+                0b100000000000,
+                0b010000000000,
+                0b001000000000,
+                0b000100000000,
+                0b000010000000,
+                0b000001000000,
+                0b000000100000,
+                0b000000010000,
+                0b000000001000,
+                0b000000000100,
+                0b000000000010,
+                0b000000000001,
+                ]
+            )
 
         index = Signal(12, reset=1)
 
-        # We want the timer to stop as soon as done is set.
-        # If we reset wait in the sync block, done will be
+        # We want the timer to stop as soon as 'done' is set.
+        # If we reset 'wait' in the sync block, 'done' will be
         # high during 2 clock cycles and our index value
         # will be incremented two times.
         self.comb += ring_timer.wait.eq(~ring_timer.done)
 
-        # This is a build time configuration.
-        # Here we use a Python 'if/else' statement
-        if (mode == 0):
-            # Use index as an index to an array
-            self.sync += [
-                If(ring_timer.done,
-                    index.eq(index + 1),
-                    If(index == 11,
-                        index.eq(0)
-                    ),
+        # Use index as an index to an array
+        self.sync += [
+            If(ring_timer.done,
+                index.eq(index + 1),
+                If(index == 11,
+                    index.eq(0)
                 ),
-            ]
-            self.comb += ring.leds.eq(led_array[index])
-        else:
-            # Use index as a shift register
-            self.sync += [
-                If(ring_timer.done,
-                    index.eq(index << 1),
-                    If(index == 0x800,
-                        index.eq(1)
-                    ),
-                ),
-            ]
-            self.comb += ring.leds.eq(index)
+            ),
+        ]
+
+        self.comb += ring.leds.eq(led_array[index])
 
         self.comb += [
             ring.colors.eq(color),

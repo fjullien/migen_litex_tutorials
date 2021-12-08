@@ -64,11 +64,10 @@ class RingSerialCtrl(Module):
 
         ###
 
-        period = int(150e-6 * sys_clk_freq)
+        t1h    = int(0.80e-6 * sys_clk_freq)
 
         pulse_cnt  = Signal(max=24)
         high       = Signal(1, reset=1)
-        time_cnt   = Signal(max=period)
 
         # Add your timer instance here
 
@@ -76,19 +75,18 @@ class RingSerialCtrl(Module):
             If(pulse_cnt < 24,
                 If(high,
                     self.do.eq(1),
-                    # Do something here
+                    # Start the timer
+                    # timer finished ?
+                    #    We are sending a 'low' level
+                    #    Stop the timer
                 ).Else(
                     self.do.eq(0),
-                    # Do something here
+                    # Start the timer
+                    # timer finished ?
+                    #    We are sending a 'high' level
+                    #    Stop the timer
+                    #    increment bit counter
                 )
-            )
-        ]
-
-        self.sync += [
-            time_cnt.eq(time_cnt + 1),
-            If(time_cnt > period,
-                pulse_cnt.eq(0),
-                time_cnt.eq(0),
             )
         ]
 

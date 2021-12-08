@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from enum import Enum
 
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
@@ -7,10 +6,6 @@ from migen.genlib.misc import WaitTimer
 
 from platform_tango import *
 from ring import *
-
-class mode(Enum):
-    SINGLE = 0
-    DOUBLE = 1
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -32,12 +27,12 @@ class CRG(Module):
 # Design -------------------------------------------------------------------------------------------
 
 class Tuto(Module):
-    def __init__(self, platform, sys_clk_freq):
+    def __init__(self, platform, sys_clk_freq, mode):
 
         crg = CRG(platform)
         self.submodules += crg
 
-        led = RingControl(platform.request("do"), mode.SINGLE, 0x203050, 12, sys_clk_freq)
+        led = RingControl(platform.request("do"), mode, 0x203050, 12, sys_clk_freq)
         self.submodules.ledring = led
 
 # Test -------------------------------------------------------------------------------------------
@@ -54,6 +49,7 @@ def main():
 
     build_dir= 'gateware'
     platform= Platform()
+    style = mode.SINGLE
 
     if "load" in sys.argv[1: ]:
         prog= platform.create_programmer()
@@ -72,7 +68,10 @@ def main():
         run_simulation(ring, test(ring), clocks={"sys": 1e9/24e6}, vcd_name="sim.vcd")
         exit()
 
-    design = Tuto(platform, 24e6)
+    if "dual" in sys.argv[1: ]:
+        style = mode.DOUBLE
+
+    design = Tuto(platform, 24e6, style)
     platform.build(design, build_dir=build_dir)
 
 if __name__ == "__main__":

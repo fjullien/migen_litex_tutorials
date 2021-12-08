@@ -65,9 +65,12 @@ class Blink(Module):
 class RingSerialCtrl(Module):
     def __init__(self, nleds, sys_clk_freq):
         self.do       = Signal()
-        #...
+        self.leds     = Signal(12)
+        self.colors   = Signal(24)
 
         ###
+
+        # Internal signals
 
         # Timings
         trst = int(75e-6 * sys_clk_freq)
@@ -84,12 +87,40 @@ class RingSerialCtrl(Module):
         #......
 
         # FSM
-        self.submodules.fsm = fsm = FSM(reset_state="RST")
+        self.submodules.fsm = fsm = FSM(reset_state="LED-SHIFT")
+
+        # Wait for reset time
         fsm.act("RST",
             #...
         )
 
-        #...
+        # Get the current led control bit to see if it
+        # should be on or off and prepare a variable with
+        # the data (24 bits) to send
+        fsm.act("LED-SHIFT",
+            #...
+        )
+
+        # Test data bit
+        fsm.act("BIT-TEST",
+            #...
+        )
+
+        # Send a 'zero' pulse
+        fsm.act("ZERO-SEND",
+            #...
+        )
+
+        # Send a 'one' pulse
+        fsm.act("ONE-SEND",
+            #...
+        )
+
+        # Shift the current data to get the next bit to test
+        # and then, go to BIT-TEST
+        fsm.act("BIT-SHIFT",
+            #...
+        )
 
 
 # Test -------------------------------------------------------------------------------------------

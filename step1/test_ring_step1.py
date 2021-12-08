@@ -107,22 +107,22 @@ class RingSerialCtrl(Module):
         # my_signal.eq(1)
 
         self.sync += [
-            If( #condition,
-                # statement1,
-                # statement2,
-                # ...
-            ).Else(
-                # statement3,
-                 # statement4,
-                 # ...
-            ),
-            # statement5,
-        ]
-
-        # You can as much as self.sync as you want
-        # it can improve code readability
-        self.sync += [
-            # statement6,
+            If( # have we sent 24 bits ?,
+                If( # We are sending a 'high' level,
+                    # set do to 1,
+                    # increment clock count,
+                    # done ?
+                    #   reset clock count
+                    #   We are sending a 'low' level
+                ).Else(
+                    # set do to 0,
+                    # increment clock count,
+                    # done ?
+                    #   reset clock count
+                    #   We are sending a 'high' level
+                    #   increment bit counter
+                ),
+            )
         ]
 
 # Test -------------------------------------------------------------------------------------------

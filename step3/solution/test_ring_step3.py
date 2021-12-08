@@ -66,7 +66,6 @@ class RingSerialCtrl(Module):
         t1l    = int(0.45e-6 * sys_clk_freq)
 
         pulse_cnt  = Signal(max=24)
-        high       = Signal(1, reset=1)
         time_cnt   = Signal(max=period)
 
         t1h_timer = WaitTimer(t1h)
@@ -91,17 +90,12 @@ class RingSerialCtrl(Module):
                 t1l_timer.wait.eq(0),
             ),
             If(pulse_cnt == 23,
-                NextState("RESET")
+                NextState("STOP")
             )
         )
 
-        fsm.act("RESET",
-            NextValue(time_cnt, time_cnt + 1),
-            If(time_cnt > period,
-                NextValue(pulse_cnt, 0),
-                NextValue(time_cnt, 0),
-                NextState("HIGH"),
-            )
+        fsm.act("STOP",
+            NextState("STOP"),
         )
 
 

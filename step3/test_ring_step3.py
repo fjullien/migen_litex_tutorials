@@ -66,8 +66,6 @@ class RingSerialCtrl(Module):
         t1l    = int(0.45e-6 * sys_clk_freq)
 
         pulse_cnt  = Signal(max=24)
-        high       = Signal(1, reset=1)
-        time_cnt   = Signal(max=period)
 
         t1h_timer = WaitTimer(t1h)
         t1l_timer = WaitTimer(t1l)
@@ -76,15 +74,24 @@ class RingSerialCtrl(Module):
         # Complete this FSM
         self.submodules.fsm = fsm = FSM(reset_state="HIGH")
         fsm.act("HIGH",
-            # Your code here
+            # Set do to '1'
+            # Start the timer
+            # Timer finished ?
+            #   Go to LOW
         )
 
         fsm.act("LOW",
-            # Your code here
+            # Set do to '0'
+            # Start the timer
+            # Timer finished ?
+            #   Increment bit count
+            #   Go to HIGH
+            # 24 bits sent ?
+            #   Go to STOP
         )
 
-        fsm.act("RESET",
-            # Your code here
+        fsm.act("STOP",
+            # Go to STOP
         )
 
 

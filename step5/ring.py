@@ -1,9 +1,19 @@
+from enum import Enum
+
 from migen import *
 from migen.genlib.misc import WaitTimer
 
+class mode(Enum):
+    SINGLE = 0
+    DOUBLE = 1
+
 class RingControl(Module):
     def __init__(self, pad, mode, color, nleds, sys_clk_freq):
-    #.....
+
+        ring = RingSerialCtrl(nleds, sys_clk_freq)
+        self.submodules += ring
+
+        # ................
 
 class RingSerialCtrl(Module):
     def __init__(self, nleds, sys_clk_freq):
