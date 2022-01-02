@@ -10,7 +10,9 @@ class mode(Enum):
 class RingControl(Module):
     def __init__(self, pad, mode, color, nleds, sys_clk_freq):
 
-        ring = RingSerialCtrl(nleds, sys_clk_freq)
+        conf = Record([("colors", 24), ("leds", 12)])
+
+        ring = RingSerialCtrl(nleds, conf, sys_clk_freq)
         self.submodules += ring
 
         ring_timer = WaitTimer(int(0.05*sys_clk_freq))
@@ -71,18 +73,16 @@ class RingControl(Module):
             ),
         ]
 
-        self.comb += ring.leds.eq(led_array[index])
-
+        self.comb += conf.leds.eq(led_array[index])
+       
         self.comb += [
-            ring.colors.eq(color),
+            conf.colors.eq(color),
             pad.eq(~ring.do)
         ]
 
 class RingSerialCtrl(Module):
-    def __init__(self, nleds, sys_clk_freq):
+    def __init__(self, nleds, conf, sys_clk_freq):
         self.do       = Signal()
-        self.leds     = Signal(12)
-        self.colors   = Signal(24)
 
         ###
 
@@ -117,7 +117,7 @@ class RingSerialCtrl(Module):
             If(trst_timer.done,
                 NextValue(led_count, 0),
                 NextState("LED-SHIFT"),
-                NextValue(led, self.leds),
+                NextValue(led, conf.leds),
             )
         )
         fsm.act("LED-SHIFT",
@@ -126,7 +126,7 @@ class RingSerialCtrl(Module):
             If(led[-1] == 0,
                 NextValue(data, 0)
             ).Else(
-                NextValue(data, self.colors)
+                NextValue(data, conf.colors)
             ),
             NextValue(led, led << 1),
             If(led_count == (nleds),

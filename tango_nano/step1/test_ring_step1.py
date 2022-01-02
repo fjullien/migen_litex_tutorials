@@ -97,8 +97,10 @@ class RingSerialCtrl(Module):
         ###
 
         # Add your internal signals here
-        # If you want a signal that can hold a maximum value of my_value
+
+        # If you want a signal that can hold a maximum value of "my_value":
         # t_high_cnt = Signal(max=my_value)
+
         # Signals are always initialized to '0' unless you explicitely
         # assign a reset value:
         # az = Signal(8, reset=0x25)
