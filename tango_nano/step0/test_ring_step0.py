@@ -36,7 +36,7 @@ class Tuto(Module):
         clk = platform.request("sys_clk")
         led0 = platform.request("user_led", 0)
 
-        # Creates
+        # Creates a "sys" clock domain and generates a startup reset
         crg = CRG(clk)
         self.submodules.crg = crg
 
@@ -55,7 +55,7 @@ def main():
     design = Tuto(platform)
     platform.build(design, build_dir="gateware")
 
-    if "load" in sys.argv[1: ]:
+    if "load" in sys.argv[1:]:
         prog = platform.create_programmer()
         prog.load_bitstream(os.path.join("gateware", "impl", "pnr", "project.fs"))
         exit()

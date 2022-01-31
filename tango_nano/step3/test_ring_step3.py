@@ -116,11 +116,6 @@ def main():
             build_dir, "impl", "pnr", "project.fs"))
         exit()
 
-    if "flash" in sys.argv[1: ]:
-        prog= platform.create_programmer()
-        prog.flash(0, os.path.join(build_dir, "impl", "pnr", "project.fs"))
-        exit()
-
     if "sim" in sys.argv[1: ]:
         ring = RingSerialCtrl(24e6)
         run_simulation(ring, test(), clocks={"sys": 1e9/24e6}, vcd_name="sim.vcd")

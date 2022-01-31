@@ -66,7 +66,6 @@ class RingSerialCtrl(Module):
         t1l    = int(0.45e-6 * sys_clk_freq)
 
         pulse_cnt  = Signal(max=24)
-        time_cnt   = Signal(max=period)
 
         t1h_timer = WaitTimer(t1h)
         t1l_timer = WaitTimer(t1l)
@@ -118,11 +117,6 @@ def main():
         prog= platform.create_programmer()
         prog.load_bitstream(os.path.join(
             build_dir, "impl", "pnr", "project.fs"))
-        exit()
-
-    if "flash" in sys.argv[1: ]:
-        prog= platform.create_programmer()
-        prog.flash(0, os.path.join(build_dir, "impl", "pnr", "project.fs"))
         exit()
 
     if "sim" in sys.argv[1: ]:

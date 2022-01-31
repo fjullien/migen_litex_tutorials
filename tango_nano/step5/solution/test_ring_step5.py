@@ -57,11 +57,6 @@ def main():
             build_dir, "impl", "pnr", "project.fs"))
         exit()
 
-    if "flash" in sys.argv[1: ]:
-        prog= platform.create_programmer()
-        prog.flash(0, os.path.join(build_dir, "impl", "pnr", "project.fs"))
-        exit()
-
     if "sim" in sys.argv[1: ]:
         do = Signal()
         ring = RingControl(do, 0x408020, 12, 24e6)
