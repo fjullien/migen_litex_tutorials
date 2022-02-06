@@ -10,26 +10,21 @@ class Blink(Module):
     def __init__(self, bit):
         # This signal, declared as a attribute of the class
         # can be accessed from outside the module.
-
-        # ....... Add an interface signal named 'out' here ...........
-
+        self.out = Signal()
 
         ###
 
         # Internal signal
-
-        # ....... Define a 25 bits signal named 'counter' here ...........
+        counter = Signal(25)
 
         # This is the actual counter. It is incremented each clock cycle.
         # Because it's not just only wires, it needs some memory (registers)
         # it has to be in a synchronous block.
-
-        # ....... Increment 'counter' here ...........
+        self.sync += counter.eq(counter + 1)
 
         # Combinatorial assignments can be seen as wires.
         # Here we connect a bit of the counter to the self.out signal
-
-        # ....... Connect bit counter[bit] to the out interface ...........
+        self.comb += self.out.eq(counter[bit])
 
 # Design -------------------------------------------------------------------------------------------
 
@@ -45,9 +40,9 @@ class Tuto(Module):
         self.submodules.crg = crg
 
         # Instance of Blink
-        # ....... Create an instance of Blink ............
-        # ....... Add it to submudules ...................
-        # ....... Connect blink output to led0 ...........
+        blink = Blink(24)
+        self.submodules += blink
+        self.comb += led0.eq(blink.out)
 
         # Add a timing constraint
         platform.add_period_constraint(clk, 1e9/100e6)
@@ -60,7 +55,7 @@ def test():
         yield
         loop = loop + 1
 
-# Build --------------------------------------------------------------------------------------------
+# Build -------------------------------------------------------------------------------------------
 
 def main():
 
