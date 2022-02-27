@@ -51,7 +51,6 @@ class BaseSoC(SoCCore):
 
         SoCCore.__init__(self, platform, sys_clk_freq,
             ident         = "LiteX SoC on Arty A7-35",
-            ident_version = True,
             **kwargs
         )
 
@@ -67,8 +66,10 @@ class BaseSoC(SoCCore):
         self.add_etherbone(phy=self.ethphy, ip_address="192.168.1.98")
 
         self.submodules.udp_streamer = udp_streamer = LiteEthUDPStreamer(
-            udp        = self.ethcore.udp,
+            self.ethcore_etherbone.udp,
+            ip_address = 0,
             udp_port   = 5678,
+            cd         = "etherbone"
         )
 
         bus = wishbone.Interface(data_width=8, adr_width=self.bus.address_width)

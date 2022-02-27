@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import sys
+
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
-from platform_arty_a7 import *
+from litex_boards.platforms import arty
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -141,8 +143,10 @@ def main():
 
     build_dir= 'gateware'
 
-    # Instance of our platform (which is in platform_arty_a7.py)
-    platform = Platform(toolchain="vivado")
+    platform = arty.Platform(variant="a7-35", toolchain="vivado")
+
+    from litex.build.generic_platform import Pins, IOStandard
+    platform.add_extension([("do", 0, Pins("B7"), IOStandard("LVCMOS33"))])
 
     if "load" in sys.argv[1: ]:
         prog = platform.create_programmer()

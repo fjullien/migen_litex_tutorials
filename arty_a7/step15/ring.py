@@ -2,44 +2,42 @@ from enum import IntEnum
 
 from migen import *
 from migen.genlib.misc import WaitTimer
-from migen.genlib.cdc import *
 
-from litex.soc.interconnect import wishbone
+from litex.soc.interconnect.csr import AutoCSR, CSRStorage, CSRConstant
 
 class mode(IntEnum):
     SINGLE = 0
     DOUBLE = 1
 
-MAJOR = 1
-MINOR = 22
+class RingControl(Module, AutoCSR):
+    def __init__(self, pad, mode, nleds, sys_clk_freq, sim=False):
+        self.color     = CSRStorage(24, reset=0x400000)
+        self.test      = CSRConstant(100)
 
-DDR_BASE_ADDRESS = 0x40000000
+        ring = RingSerialCtrl(nleds, sys_clk_freq)
+        self.submodules.ring = ring
 
-class RingControl(Module):
-    def __init__(self, pad, mode, nleds, sys_clk_freq):
-        self.bus  = bus = wishbone.Interface(data_width=32)
-
-        ring = RingSerialCtrl(bus, nleds, sys_clk_freq)
-        self.submodules.ring= ring
-
-        ring_timer = WaitTimer(int(0.05*sys_clk_freq))
+        if sim:
+            ring_timer = WaitTimer(50000)
+        else:
+            ring_timer = WaitTimer(int(0.05*sys_clk_freq))
         self.submodules += ring_timer
 
         if (mode == mode.DOUBLE):
             print("Led ring controller configured for dual led")
             led_array = Array([
-                0b100000100000,
-                0b010000010000,
-                0b001000001000,
-                0b000100000100,
-                0b000010000010,
-                0b000001000001,
-                0b100000100000,
-                0b010000010000,
-                0b001000001000,
-                0b000100000100,
-                0b000010000010,
-                0b000001000001,
+                0b110000100000,
+                0b011000010000,
+                0b001100001000,
+                0b000110000100,
+                0b000011000010,
+                0b000001100001,
+                0b100000110000,
+                0b010000011000,
+                0b001000001100,
+                0b000100000110,
+                0b000010000011,
+                0b100001000001,
                 ]
             )
         else:
@@ -60,7 +58,7 @@ class RingControl(Module):
                 ]
             )
 
-        index = Signal(12, reset=1)
+        index = Signal(12, reset=0)
 
         # We want the timer to stop as soon as 'done' is set.
         # If we reset 'wait' in the sync block, 'done' will be
@@ -81,13 +79,15 @@ class RingControl(Module):
         self.comb += ring.leds.eq(led_array[index])
 
         self.comb += [
+            ring.colors.eq(self.color.storage),
             pad.eq(ring.do)
         ]
 
 class RingSerialCtrl(Module):
-    def __init__(self, bus, nleds, sys_clk_freq):
+    def __init__(self, nleds, sys_clk_freq):
         self.do       = Signal()
         self.leds     = Signal(12)
+        self.colors   = Signal(24)
 
         ###
 
@@ -95,7 +95,6 @@ class RingSerialCtrl(Module):
         led_count = Signal(8)
         data      = Signal(24)
         led       = Signal(12)
-        colors    = Signal(24, reset =0x10)
 
         # Timings.
         trst = int(75e-6 * sys_clk_freq)
@@ -119,18 +118,6 @@ class RingSerialCtrl(Module):
         # FSM
         self.submodules.fsm = fsm = FSM(reset_state="RST")
         fsm.act("RST",
-                bus.stb.eq(1),
-                bus.cyc.eq(1),
-                bus.we.eq(0),
-                bus.sel.eq(0xf),
-                bus.adr.eq(DDR_BASE_ADDRESS >> 2),
-                If(bus.ack,
-                    NextValue(colors, bus.dat_r),
-                    NextState("WAIT"),
-                )
-        )
-
-        fsm.act("WAIT",
             trst_timer.wait.eq(1),
             If(trst_timer.done,
                 NextValue(led_count, 0),
@@ -138,14 +125,13 @@ class RingSerialCtrl(Module):
                 NextValue(led, self.leds),
             )
         )
-
         fsm.act("LED-SHIFT",
             NextValue(bit_count, 24-1),
             NextValue(led_count, led_count + 1),
             If(led[-1] == 0,
                 NextValue(data, 0)
             ).Else(
-                NextValue(data, colors)
+                NextValue(data, self.colors)
             ),
             NextValue(led, led << 1),
             If(led_count == (nleds),

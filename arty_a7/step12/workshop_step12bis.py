@@ -60,7 +60,6 @@ class BaseSoC(SoCCore):
 
         SoCCore.__init__(self, platform, sys_clk_freq,
             ident         = "LiteX SoC on Arty A7-35",
-            ident_version = True,
             **kwargs
         )
 

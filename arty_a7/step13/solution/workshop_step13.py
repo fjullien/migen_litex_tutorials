@@ -16,8 +16,7 @@ from litex.soc.interconnect import wishbone
 from litex.soc.cores.dma import WishboneDMAWriter
 
 from liteeth.phy.mii import LiteEthPHYMII
-from liteeth.frontend.stream import LiteEthUDPStreamer
-
+from liteeth.frontend.stream import LiteEthUDP2StreamRX, LiteEthUDPStreamer
 
 from s2dma import *
 
@@ -51,7 +50,6 @@ class BaseSoC(SoCCore):
 
         SoCCore.__init__(self, platform, sys_clk_freq,
             ident         = "LiteX SoC on Arty A7-35",
-            ident_version = True,
             **kwargs
         )
 
@@ -67,8 +65,10 @@ class BaseSoC(SoCCore):
         self.add_etherbone(phy=self.ethphy, ip_address="192.168.1.98")
 
         self.submodules.udp_streamer = udp_streamer = LiteEthUDPStreamer(
-            udp        = self.ethcore.udp,
+            self.ethcore_etherbone.udp,
+            ip_address = 0,
             udp_port   = 5678,
+            cd         = "etherbone"
         )
 
         # udp_streamer.source is a stream that will transport UDP data payload
@@ -107,10 +107,7 @@ class BaseSoC(SoCCore):
         ]
 
         #analyzer_signals = [
-        #    udp_streamer.source,
-        #    s2dma.source,
-        #    s2dma.sink,
-        #    udp_dma.bus
+        #    udp_streamer.source
         #]
 
         #from litescope import LiteScopeAnalyzer

@@ -1,4 +1,4 @@
-BUILD_DIR?=../build/platform_arty_a7/
+BUILD_DIR?=../build/digilent_arty/
 
 # Provides a bunch of definition (libs, directories, compiler triple,...)
 include $(BUILD_DIR)/software/include/generated/variables.mak

@@ -8,7 +8,7 @@ from migen.genlib.resetsync import AsyncResetSynchronizer
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 
-from platform_arty_a7 import *
+from litex_boards.platforms import arty
 from ring import *
 
 # CRG ----------------------------------------------------------------------------------------------
@@ -33,11 +33,13 @@ class CRG(Module):
 class BaseSoC(SoCCore):
     def __init__(self, sys_clk_freq=int(100e6), mode=mode.DOUBLE, **kwargs):
 
-        platform = Platform()
+        platform = arty.Platform(variant="a7-35", toolchain="vivado")
+
+        from litex.build.generic_platform import Pins, IOStandard
+        platform.add_extension([("do", 0, Pins("B7"), IOStandard("LVCMOS33"))])
 
         SoCCore.__init__(self, platform, sys_clk_freq,
             ident         = "LiteX SoC on Arty A7-35",
-            ident_version = True,
             **kwargs
         )
 

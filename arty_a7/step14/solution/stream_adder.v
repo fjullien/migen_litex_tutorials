@@ -1,4 +1,4 @@
-module stream_adder (
+module stream_adder(
     input  wire sink_valid,
     input  wire sink_last,
     input  wire [7:0] sink_data,
@@ -12,7 +12,7 @@ module stream_adder (
 
 assign source_valid = sink_valid;
 assign source_last = sink_last;
-assign source_data = sink_data + 1;
+assign source_data = sink_data + ADD_VALUE;
 assign sink_ready = source_ready;
 
 endmodule
