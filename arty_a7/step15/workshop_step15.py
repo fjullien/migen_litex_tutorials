@@ -43,6 +43,9 @@ _io = [
         Subsignal("sink_ready",   Pins(1)),
         Subsignal("sink_data",    Pins(8)),
     ),
+
+    # This is the ring data out. Our C++ model will be
+    # connected to this pin
     ("data_out", 0, Pins(1)),
 ]
 # Platform -----------------------------------------------------------------------------------------
@@ -68,12 +71,16 @@ class BaseSoC(SoCCore):
 
         self.submodules.crg = CRG(platform.request("sys_clk"))
 
-        #self.submodules.ethphy = LiteEthPHYModel(self.platform.request("eth"))
-        #self.add_etherbone(phy=self.ethphy, ip_address="192.168.1.98")
-
         led = RingControl(platform.request("data_out"), mode.DOUBLE, 12, sys_clk_freq, sim=True)
         self.submodules.ledring = led
         self.add_csr("ledring")
+
+        #-------------------------------------------------------------------------------
+        # Using the etherbone bridge, we can run litescope on the simulated platform
+        #-------------------------------------------------------------------------------
+
+        #self.submodules.ethphy = LiteEthPHYModel(self.platform.request("eth"))
+        #self.add_etherbone(phy=self.ethphy, ip_address="192.168.1.98")
 
         #analyzer_signals = [
         #    led.ring.do,
@@ -89,15 +96,20 @@ class BaseSoC(SoCCore):
 # Build --------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Verilator Simulation")
-    args = parser.parse_args()
-
     sim_config = SimConfig()
     sys_clk_freq = int(20e6)
+
+    # Needed to create the simulated clock
     sim_config.add_clocker("sys_clk", freq_hz=sys_clk_freq)
-    #sim_config.add_module("ethernet", "eth", args={"interface": "tap0", "ip": "192.168.1.100"})
+
+    # Needed to create the simulated serial port + terminal
     sim_config.add_module("serial2console", "serial")
+
+    # This is our LedRing model
     sim_config.add_module("ledring", "data_out", args={"freq" : sys_clk_freq})
+
+    # In case we want Ethernet
+    #sim_config.add_module("ethernet", "eth", args={"interface": "tap0", "ip": "192.168.1.100"})
 
     soc     = BaseSoC(sys_clk_freq)
     builder = Builder(soc, csr_csv="csr.csv")
